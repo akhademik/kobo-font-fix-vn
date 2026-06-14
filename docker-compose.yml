@@ -1,0 +1,7 @@
+services:
+  kobo-font-fixer:
+    build: .
+    image: kobo-font-fixer-vn
+    ports:
+      - "5000:5000"
+    restart: unless-stopped

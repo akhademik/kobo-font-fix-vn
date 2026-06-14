@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kobo Font Fixer VN</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .card {
+      background: #1a1d27;
+      border: 1px solid #2d3148;
+      border-radius: 16px;
+      padding: 36px;
+      width: 100%;
+      max-width: 640px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .header h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #f8f9fa;
+      margin-bottom: 6px;
+    }
+
+    .header p {
+      color: #718096;
+      font-size: 0.9rem;
+    }
+
+    .badge {
+      display: inline-block;
+      background: #2d3748;
+      color: #90cdf4;
+      font-size: 0.75rem;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+    }
+
+    /* Mode toggle */
+    .mode-toggle {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .mode-btn {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #3d4460;
+      border-radius: 8px;
+      background: #13151f;
+      color: #718096;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .mode-btn:hover {
+      border-color: #667eea;
+      color: #cbd5e0;
+    }
+
+    .mode-btn.active {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.12);
+      color: #90cdf4;
+    }
+
+    /* Drop zone */
+    .dropzone {
+      border: 2px dashed #3d4460;
+      border-radius: 12px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 24px;
+      user-select: none;
+    }
+
+    .dropzone:hover,
+    .dropzone.drag-over {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.05);
+    }
+
+    /* Hidden file inputs — outside dropzone để tránh CSS conflict */
+    #fileInput,
+    #folderInput {
+      display: none;
+    }
+
+    .dropzone-icon {
+      font-size: 2.5rem;
+      margin-bottom: 12px;
+    }
+
+    .dropzone h3 {
+      color: #cbd5e0;
+      margin-bottom: 6px;
+    }
+
+    .dropzone p {
+      color: #718096;
+      font-size: 0.85rem;
+    }
+
+    .file-list {
+      margin-top: 12px;
+      color: #90cdf4;
+      font-size: 0.82rem;
+      line-height: 1.7;
+    }
+
+    /* Settings */
+    .settings {
+      background: #13151f;
+      border: 1px solid #2d3148;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .settings h3 {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #a0aec0;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 16px;
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .setting-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .setting-label {
+      font-size: 0.875rem;
+      color: #cbd5e0;
+    }
+
+    .setting-label small {
+      display: block;
+      color: #718096;
+      font-size: 0.75rem;
+      margin-top: 2px;
+    }
+
+    input[type="number"] {
+      background: #1a1d27;
+      border: 1px solid #3d4460;
+      color: #e2e8f0;
+      border-radius: 6px;
+      padding: 6px 10px;
+      width: 80px;
+      font-size: 0.875rem;
+      text-align: center;
+    }
+
+    input[type="number"]:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    /* Buttons */
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      opacity: 0.9;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-download {
+      background: linear-gradient(135deg, #48bb78, #38a169);
+      color: white;
+      margin-top: 12px;
+      display: none;
+    }
+
+    .btn-download:hover {
+      opacity: 0.9;
+    }
+
+    /* Log */
+    .log-box {
+      display: none;
+      margin-top: 20px;
+      background: #0d0f17;
+      border: 1px solid #2d3148;
+      border-radius: 10px;
+      padding: 16px;
+      max-height: 280px;
+      overflow-y: auto;
+      font-family: "Fira Code", "Courier New", monospace;
+      font-size: 0.78rem;
+      line-height: 1.6;
+      color: #a0aec0;
+    }
+
+    .log-box .log-line {
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .log-box .log-ok {
+      color: #68d391;
+    }
+
+    .log-box .log-err {
+      color: #fc8181;
+    }
+
+    .log-box .log-head {
+      color: #90cdf4;
+    }
+
+    /* Status bar */
+    .status-bar {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      margin-top: 14px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.875rem;
+    }
+
+    .status-bar.running {
+      background: rgba(102, 126, 234, 0.15);
+      color: #90cdf4;
+    }
+
+    .status-bar.done {
+      background: rgba(72, 187, 120, 0.15);
+      color: #68d391;
+    }
+
+    .status-bar.error {
+      background: rgba(252, 129, 74, 0.15);
+      color: #fc8181;
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-top-color: #90cdf4;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Hidden inputs ngoài dropzone -->
+  <input type="file" id="fileInput" multiple accept=".ttf">
+  <input type="file" id="folderInput" webkitdirectory multiple>
+
+  <div class="card">
+    <div class="header">
+      <div class="badge">📖 Kobo Vietnamese</div>
+      <h1>Kobo Font Fixer VN</h1>
+      <p>Fix lỗi dấu tiếng Việt bị clip trên Kobo e-reader</p>
+    </div>
+
+    <!-- Naming Note -->
+    <div style="background: rgba(229, 62, 62, 0.1); border-left: 4px solid #f56565; padding: 12px; margin-bottom: 20px; border-radius: 4px;">
+      <p style="font-size: 0.85rem; color: #fc8181; line-height: 1.4;">
+        <strong>⚠️ Lưu ý về tên file:</strong> Để Kobo gom nhóm font chính xác, hãy đổi tên file theo chuẩn: <br>
+        <code>Tên-Regular.ttf</code>, <code>Tên-Bold.ttf</code>, <code>Tên-Italic.ttf</code>, <code>Tên-BoldItalic.ttf</code>
+      </p>
+    </div>
+
+    <!-- Mode toggle -->
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="modeFile" onclick="setMode('file')">📄 Chọn file .ttf</button>
+      <button class="mode-btn" id="modeFolder" onclick="setMode('folder')">📁 Chọn thư mục</button>
+    </div>
+
+    <!-- Drop zone -->
+    <div class="dropzone" id="dropzone">
+      <div class="dropzone-icon" id="dropIcon">🗂️</div>
+      <h3 id="dropTitle">Kéo thả font vào đây</h3>
+      <p id="dropDesc">hoặc click để chọn file • Chỉ nhận file .ttf</p>
+      <div class="file-list" id="fileList"></div>
+    </div>
+
+    <!-- Advanced settings -->
+    <div class="settings">
+      <h3>⚙️ Thông số</h3>
+
+      <div class="setting-row">
+        <div class="setting-label">
+          WinAscent Ratio
+          <small>Tăng nếu dấu trên vẫn bị clip (1.3 – 1.6)</small>
+        </div>
+        <input type="number" id="winAscent" value="1.45" step="0.05" min="1.0" max="2.0">
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-label">
+          WinDescent Ratio
+          <small>Tăng nếu dấu nặng bị clip (0.4 – 0.6)</small>
+        </div>
+        <input type="number" id="winDescent" value="0.50" step="0.05" min="0.3" max="1.0">
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-label">
+          Typo Ascender ×
+          <small>Fix clip đầu trang — tăng nếu cần (1.1 – 1.3)</small>
+        </div>
+        <input type="number" id="typoMult" value="1.2" step="0.05" min="1.0" max="1.5">
+      </div>
+    </div>
+
+    <button class="btn btn-primary" id="processBtn" disabled onclick="startProcess()">
+      Chọn font để bắt đầu
+    </button>
+
+    <div class="status-bar" id="statusBar">
+      <div class="spinner" id="spinner"></div>
+      <span id="statusText">Đang xử lý...</span>
+    </div>
+
+    <div class="log-box" id="logBox"></div>
+
+    <button class="btn btn-download" id="downloadBtn">
+      ⬇️ Tải về font đã fix (ZIP)
+    </button>
+  </div>
+
+  <script>
+    let selectedFiles = [];   // Array of { file: File, path: string }
+    let currentJobId = null;
+    let pollTimer = null;
+    let currentMode = "file";
+
+    const dropzone = document.getElementById("dropzone");
+    const fileInput = document.getElementById("fileInput");
+    const folderInput = document.getElementById("folderInput");
+    const fileList = document.getElementById("fileList");
+    const processBtn = document.getElementById("processBtn");
+    const statusBar = document.getElementById("statusBar");
+    const statusText = document.getElementById("statusText");
+    const spinner = document.getElementById("spinner");
+    const logBox = document.getElementById("logBox");
+    const downloadBtn = document.getElementById("downloadBtn");
+
+    // ── Mode toggle ──────────────────────────────────────────────
+    function setMode(mode) {
+      currentMode = mode;
+      document.getElementById("modeFile").classList.toggle("active", mode === "file");
+      document.getElementById("modeFolder").classList.toggle("active", mode === "folder");
+
+      if (mode === "file") {
+        document.getElementById("dropIcon").textContent = "🗂️";
+        document.getElementById("dropTitle").textContent = "Kéo thả file font vào đây";
+        document.getElementById("dropDesc").textContent = "hoặc click để chọn file • Chỉ nhận .ttf";
+      } else {
+        document.getElementById("dropIcon").textContent = "📁";
+        document.getElementById("dropTitle").textContent = "Kéo thả thư mục vào đây";
+        document.getElementById("dropDesc").textContent = "hoặc click để chọn thư mục • Quét đệ quy tất cả .ttf";
+      }
+
+      selectedFiles = [];
+      fileList.innerHTML = "";
+      processBtn.disabled = true;
+      processBtn.textContent = "Chọn font để bắt đầu";
+    }
+
+    // ── Click handlers ───────────────────────────────────────────
+    dropzone.addEventListener("click", () => {
+      if (currentMode === "file") fileInput.click();
+      else folderInput.click();
+    });
+
+    // File input (chọn file lẻ)
+    fileInput.addEventListener("change", () => {
+      const entries = [...fileInput.files]
+        .filter(f => f.name.toLowerCase().endsWith(".ttf"))
+        .map(f => ({ file: f, path: f.name }));
+      applySelection(entries);
+      fileInput.value = "";
+    });
+
+    // Folder input (webkitdirectory) — dùng webkitRelativePath cho multi-level
+    folderInput.addEventListener("change", () => {
+      const entries = [...folderInput.files]
+        .filter(f => f.name.toLowerCase().endsWith(".ttf"))
+        .map(f => ({ file: f, path: f.webkitRelativePath || f.name }));
+      applySelection(entries);
+      folderInput.value = "";
+    });
+
+    // ── Drag & drop ──────────────────────────────────────────────
+    dropzone.addEventListener("dragover", e => {
+      e.preventDefault();
+      dropzone.classList.add("drag-over");
+    });
+
+    dropzone.addEventListener("dragleave", e => {
+      if (!dropzone.contains(e.relatedTarget)) dropzone.classList.remove("drag-over");
+    });
+
+    dropzone.addEventListener("drop", async e => {
+      e.preventDefault();
+      dropzone.classList.remove("drag-over");
+
+      const items = [...e.dataTransfer.items];
+
+      // Dùng FileSystem API để đọc đệ quy folder kéo thả
+      if (items.length && items[0].webkitGetAsEntry) {
+        const entries = [];
+        const reads = items.map(item => {
+          const entry = item.webkitGetAsEntry();
+          if (!entry) return Promise.resolve();
+          return readEntry(entry, "", entries);
+        });
+        await Promise.all(reads);
+        const ttfEntries = entries.filter(e => e.path.toLowerCase().endsWith(".ttf"));
+        if (ttfEntries.length) { applySelection(ttfEntries); return; }
+      }
+
+      // Fallback: file list thông thường
+      const fallback = [...e.dataTransfer.files]
+        .filter(f => f.name.toLowerCase().endsWith(".ttf"))
+        .map(f => ({ file: f, path: f.name }));
+      applySelection(fallback);
+    });
+
+    // Đọc đệ quy FileSystemEntry
+    function readEntry(entry, basePath, results) {
+      return new Promise(resolve => {
+        const fullPath = basePath ? `${basePath}/${entry.name}` : entry.name;
+
+        if (entry.isFile) {
+          entry.file(file => {
+            results.push({ file, path: fullPath });
+            resolve();
+          }, resolve);
+        } else if (entry.isDirectory) {
+          const reader = entry.createReader();
+          // createReader cần gọi readEntries nhiều lần đến khi hết
+          const readAll = (acc) => {
+            reader.readEntries(async batch => {
+              if (!batch.length) {
+                await Promise.all(acc.map(e => readEntry(e, fullPath, results)));
+                resolve();
+              } else {
+                readAll([...acc, ...batch]);
+              }
+            }, resolve);
+          };
+          readAll([]);
+        } else {
+          resolve();
+        }
+      });
+    }
+
+    // ── Apply selection & render ──────────────────────────────────
+    function applySelection(entries) {
+      selectedFiles = entries;
+
+      if (!selectedFiles.length) {
+        fileList.innerHTML = "⚠️ Không tìm thấy file .ttf nào";
+        processBtn.disabled = true;
+        processBtn.textContent = "Chọn font để bắt đầu";
+        return;
+      }
+
+      // Nhóm theo thư mục để hiển thị
+      const dirs = {};
+      selectedFiles.forEach(({ path }) => {
+        const parts = path.split("/");
+        const dir = parts.length > 1 ? parts.slice(0, -1).join("/") : "(gốc)";
+        dirs[dir] = (dirs[dir] || 0) + 1;
+      });
+
+      const dirCount = Object.keys(dirs).length;
+      if (dirCount === 1 && dirs["(gốc)"]) {
+        // Chỉ file lẻ, không có thư mục
+        fileList.innerHTML = `✅ ${selectedFiles.length} file: ${selectedFiles.map(e => e.file.name).join(", ")}`;
+      } else {
+        const lines = Object.entries(dirs).map(([d, n]) => `📂 ${d} — ${n} file`).join("<br>");
+        fileList.innerHTML = `✅ ${selectedFiles.length} file .ttf trong ${dirCount} thư mục:<br>${lines}`;
+      }
+
+      processBtn.disabled = false;
+      processBtn.textContent = `▶️ Xử lý ${selectedFiles.length} font`;
+    }
+
+    // ── Upload & process ─────────────────────────────────────────
+    async function startProcess() {
+      processBtn.disabled = true;
+      downloadBtn.style.display = "none";
+      logBox.innerHTML = "";
+      logBox.style.display = "block";
+      setStatus("running", "Đang upload & xử lý...");
+
+      const formData = new FormData();
+      selectedFiles.forEach(({ file, path }) => {
+        formData.append("fonts", file);
+        formData.append("paths", path);   // relative path gửi riêng
+      });
+      formData.append("win_ascent", document.getElementById("winAscent").value);
+      formData.append("win_descent", document.getElementById("winDescent").value);
+      formData.append("typo_mult", document.getElementById("typoMult").value);
+
+      const resp = await fetch("/upload", { method: "POST", body: formData });
+      const data = await resp.json();
+
+      if (!resp.ok) {
+        setStatus("error", data.error || "Upload thất bại");
+        processBtn.disabled = false;
+        return;
+      }
+
+      currentJobId = data.job_id;
+      appendLog(`📤 Uploaded ${data.files} file(s) — Job: ${currentJobId}`);
+      pollStatus();
+    }
+
+    function pollStatus() {
+      pollTimer = setInterval(async () => {
+        const resp = await fetch(`/status/${currentJobId}`);
+        const data = await resp.json();
+
+        const lines = data.log || [];
+        logBox.innerHTML = lines.map(l => `<div class="log-line ${lineClass(l)}">${escHtml(l)}</div>`).join("");
+        logBox.scrollTop = logBox.scrollHeight;
+
+        if (data.status === "done") {
+          clearInterval(pollTimer);
+          setStatus("done", "Hoàn tất! Sẵn sàng tải về.");
+          downloadBtn.style.display = "block";
+          downloadBtn.onclick = () => window.location = `/download/${currentJobId}`;
+          processBtn.disabled = false;
+          processBtn.textContent = "▶️ Xử lý lại";
+        } else if (data.status === "error") {
+          clearInterval(pollTimer);
+          setStatus("error", data.error || "Có lỗi xảy ra");
+          processBtn.disabled = false;
+        }
+      }, 800);
+    }
+
+    function setStatus(type, msg) {
+      statusBar.style.display = "flex";
+      statusBar.className = `status-bar ${type}`;
+      statusText.textContent = msg;
+      spinner.style.display = type === "running" ? "block" : "none";
+    }
+
+    function appendLog(msg) {
+      const div = document.createElement("div");
+      div.className = "log-line";
+      div.textContent = msg;
+      logBox.appendChild(div);
+      logBox.scrollTop = logBox.scrollHeight;
+    }
+
+    function lineClass(l) {
+      if (l.includes("✅") || l.includes("Done") || l.includes("Saved")) return "log-ok";
+      if (l.includes("❌") || l.includes("Error") || l.includes("error")) return "log-err";
+      if (l.startsWith("━") || l.startsWith("Bước")) return "log-head";
+      return "";
+    }
+
+    function escHtml(s) {
+      return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+  </script>
+</body>
+
+</html>
